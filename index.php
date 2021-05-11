@@ -1,180 +1,144 @@
 <?php
-     include "inc/header.php";
+ob_start();
+session_start();
+include("inc/db.php");
+
 ?>
-    
-    <!-- :::::::::: Page Banner Section Start :::::::: -->
-    <section class="blog-bg background-img">
-        <div class="container">
-            <!-- Row Start -->
-            <div class="row">
-                <div class="col-md-12">
-                    <h2 class="page-title">Blog Page</h2>
-                    <!-- Page Heading Breadcrumb Start -->
-                    <nav class="page-breadcrumb-item">
-                        <ol>
-                            <li><a href="index.html">Home <i class="fa fa-angle-double-right"></i></a></li>
-                            <!-- Active Breadcrumb -->
-                            <li class="active">Blog</li>
-                        </ol>
-                    </nav>
-                    <!-- Page Heading Breadcrumb End -->
-                </div>
-                  
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AdminLTE 3 | Log in</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
+  <!-- icheck bootstrap -->
+  <link rel="stylesheet" href="plugins/icheck-bootstrap/icheck-bootstrap.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="dist/css/adminlte.min.css">
+</head>
+<body class="hold-transition login-page">
+<div class="login-box">
+  <div class="login-logo">
+    <a href="index.html"><b>Admin</b>LTE</a>
+  </div>
+  <!-- /.login-logo -->
+  <div class="card">
+    <div class="card-body login-card-body">
+      <p class="login-box-msg">Sign in to start your session</p>
+
+      <form action="" method="POST">
+        <div class="input-group mb-3">
+          <input type="email" class="form-control" placeholder="Email" name="email" required="required">
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-envelope"></span>
             </div>
-            <!-- Row End -->
+          </div>
         </div>
-    </section>
-    <!-- ::::::::::: Page Banner Section End ::::::::: -->
+        <div class="input-group mb-3">
+          <input type="password" class="form-control" placeholder="Password" name="password" required="required">
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-lock"></span>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-8">
+            <div class="icheck-primary">
+              <input type="checkbox" id="remember">
+              <label for="remember">
+                Remember Me
+              </label>
+            </div>
+          </div>
+          <!-- /.col -->
+          <div class="col-4">
+            <input type="submit" name="login" class="btn btn-primary btn-block" value="Sign In">
+             
+          </div>
+          <!-- /.col -->
+        </div>
+      </form>
+
+      <?php
+           if (isset($_POST['login'])) {
+             $email     = mysqli_real_escape_string($db, $_POST['email']);
+             $password  = mysqli_real_escape_string($db, $_POST['password']);
+             $hassed    = sha1($password);
+
+             $sql = "SELECT * FROM users WHERE email = '$email'";
+             $authUser = mysqli_query($db, $sql);
+
+             while ($row = mysqli_fetch_assoc($authUser)) {
+                        
+                        
+                        $_SESSION['id']          =  $row['id'];
+                        $_SESSION['name']        =  $row['name'];
+                        $_SESSION['email']       =  $row['email'];
+                        $_SESSION['password']    =  $row['password'];
+                        $_SESSION['address']     =  $row['address'];
+                        $_SESSION['phone']       =  $row['phone'];
+                        $_SESSION['role']        =  $row['role'];
+                        $_SESSION['status']      =  $row['status'];
+                        $_SESSION['image']       =  $row['image'];
+                        $_SESSION['join_date']   =  $row['join_date'];
+                        $_SESSION['message']     = "";
+
+                        if ( $email == $_SESSION['email'] && $hassed == $_SESSION['password'] && $_SESSION['status'] ==1 ) {
+                          header("Location:dashboard.php");
+                        }
+                        else if ( $email != $_SESSION['email'] && $hassed != $_SESSION['password'] && $_SESSION['status'] !=1 ){
+                          header("Location:index.php");
+
+                        }
+                        else{
+                         header("Location:index.php"); 
+                        }
+
+                      }
+           }
 
 
+      ?>
 
-    <!-- :::::::::: Blog With Right Sidebar Start :::::::: -->
-    <section>
-        <div class="container">
-            <div class="row">
-                <!-- Blog Posts Start -->
-<div class="col-md-8">
-                 <?php
+      <div class="social-auth-links text-center mb-3">
+        <p>- OR -</p>
+        <a href="#" class="btn btn-block btn-primary">
+          <i class="fab fa-facebook mr-2"></i> Sign in using Facebook
+        </a>
+        <a href="#" class="btn btn-block btn-danger">
+          <i class="fab fa-google-plus mr-2"></i> Sign in using Google+
+        </a>
+      </div>
+      <!-- /.social-auth-links -->
 
-                  $total_page = $db->query("SELECT * FROM post")->num_rows;
-                  $page =  isset($_GET['page']) && is_numeric($_GET['page']) ? $_GET['page'] : 1;
+      <p class="mb-1">
+        <a href="recover-password.php">I forgot my password</a>
+      </p>
+      <p class="mb-0">
+        <a href="register.php" class="text-center">Register a new membership</a>
+      </p>
+    </div>
+    <!-- /.login-card-body -->
+  </div>
+</div>
+<!-- /.login-box -->
 
-                  $num_result_per_page = 3;
-
-                    // $sql = "SELECT * FROM posts WHERE status = 1 ORDER BY post_id DESC LIMIT ?, ?";
-                    if($stmt = $db->prepare('SELECT * FROM post WHERE status = 1 ORDER BY post_id DESC LIMIT ?, ?'))
-
-                    $cal_page = ($page - 1) * $num_result_per_page;
-                    $stmt->bind_param('ii', $cal_page, $num_result_per_page);
-                    $stmt->execute();
-                    $myresult = $stmt->get_result();
-
-                    while( $row = $myresult->fetch_assoc() ){?>
-                     
-
-                      <!-- Single Item Blog Post Start -->
-                    <div class="blog-post">
-                        <!-- Blog Banner Image -->
-                        <div class="blog-banner">
-                           <a href="single.php?view=<?php echo $row['post_id']."=". trim(str_replace(" ", "_", strtolower($row['title']))); ?>">
-                                <img src="admin/img/post/<?php echo $row['image']; ?>">
-                                <!-- Post Category Names -->
-                                <div class="blog-category-name">
-                                    <h6>
-                                      <?php
-                                    $cat_id = $row['category_id'];
-                                  $categori = "SELECT * FROM category WHERE cat_id = '$cat_id'";
-                                  $result = mysqli_query($db, $categori);
-                                  while ($mycat = mysqli_fetch_assoc($result)) {
-                                  $cat_id     = $mycat['cat_id'];
-                                  $cat_name   = $mycat['cat_name'];
-                                  echo $cat_name;
-                                  } ?></h6>
-                                </div>
-                            </a>
-                        </div>
-                        <!-- Blog Title and Description -->
-                        <div class="blog-description">
-                             <a href="single.php?view=<?php echo $row['post_id']."=". trim(str_replace(" ", "_", strtolower($row['title']))); ?>">
-                                <h3 class="post-title"><?php echo $row['title']; ?></h3>
-                            </a>
-                            <p><?php echo substr($row['description'], 0, 350)?></p>
-                            <!-- Blog Info, Date and Author -->
-
-                            <div class="row">
-                                <div class="col-md-8">
-                                    <div class="blog-info">
-                                        <ul>
-                                            <li><i class="fa fa-calendar"></i><?php 
-
-                                             echo date('d.m.Y', strtotime($row['post_date']));
-
-                                            ?></li>
-                                            <li><i class="fa fa-user"></i>by - <?php 
-                                              $auth_iduser = $row['author_id'];
-                                              $authname = "SELECT * FROM users WHERE id = '$auth_iduser'";
-                                              $user_result = mysqli_query($db, $authname);
-                                              while ($myrow = mysqli_fetch_assoc($user_result)) {
-                                              $id       = $myrow['id'];
-                                              $name     = $myrow['name'];
-                                              echo $name;
-                                              }
-
-                                            ?></li>
-
-                                            <li><i class="fa fa-heart"></i>(50)</li>
-                                        </ul>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-4 read-more-btn">
-                                    <a href="single.php?view=<?php echo $row['post_id']."=". trim(str_replace(" ", "_", strtolower($row['title']))); ?>" class="btn-main">Read More <i class="fa fa-angle-double-right"></i></a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Single Item Blog Post End -->
-
-                     <?php } ?>
-
-                    <!-- Blog Paginetion Design Start -->
-                    <?php 
-                       if(ceil($total_page / $num_result_per_page) > 0) :
-                    ?>
-                    <div class="paginetion">
-                        <ul>
-                            <!-- Next Button -->
-                            <?php if($page > 1) : ?>
-                            <li class="blog-prev">
-                                <a href="index.php?page=<?php echo $page-1; ?>"><i class="fa fa-long-arrow-left"></i>  Previous</a>
-                            </li>
-                          <?php else : ?>
-                           <li class="blog-prev">
-                                <a href="javascript:void(0)"><i class="fa fa-long-arrow-left"></i>  Previous</a>
-                            </li>
-                          <?php endif; ?>
-
-
-                          
-                            <?php if ($page-1 > 0) : ?>
-
-                            <li><a href="index.php?page=<?php echo $page-1; ?>"><?php echo $page-1; ?></a></li>
-                            <?php endif; ?>
-                            
-                            <li class="active"><a href="index.php?page=<?php echo $page; ?>"><?php echo $page; ?></a></li>
-
-                            <?php if ($page+1 < ceil($total_page / $num_result_per_page) + 1) : ?>
-
-                            <li><a href="index.php?page=<?php echo $page+1; ?>"><?php echo $page+1; ?></a></li>
-                            <?php endif; ?>
-
-                            <!-- Previous Button -->
-                            <?php if($page < ceil($total_page / $num_result_per_page)) : ?>
-                            <li class="blog-next">
-                                <a href="index.php?page=<?php echo $page+1; ?>"> Next <i class="fa fa-long-arrow-right"></i></a>
-                            </li>
-
-                          <?php else: ?>
-                          <li class="blog-next">
-                                <a href="javascript:void(0)"> Next <i class="fa fa-long-arrow-right"></i></a>
-                            </li>
-
-                          <?php endif; ?>
-                        </ul>
-                    </div>
-                  <?php endif; ?>
-                    <!-- Blog Paginetion Design End -->               
-                </div>
-
-                <!-- Blog Right Sidebar -->
-               <?php
-                    include "inc/sidebar.php";
-
-                ?>
-
-
-    
+<!-- jQuery -->
+<script src="plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="dist/js/adminlte.min.js"></script>
 <?php
-    include "inc/footer.php";
+
+ob_end_flush();
 
 ?>
+</body>
+</html>
